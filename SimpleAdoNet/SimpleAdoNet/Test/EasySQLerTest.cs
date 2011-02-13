@@ -17,6 +17,9 @@ namespace SimpleAdoNet.Test
             var sqler = new EasySQLer(CONN_STRING);
             var totalCount = sqler.Query("select count(*) from USER_ACCOUNT").Scalar();
             Assert.AreEqual(2, totalCount);
+
+            var otherCount = sqler.Query("select count(*) from USER_ACCOUNT where username != @username").FillParameters(parameters => parameters.AddWithValue("@username", "Jdoe")).Scalar();
+            Assert.AreEqual(1, otherCount);
         }
     }
 }
