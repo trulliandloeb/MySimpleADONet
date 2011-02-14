@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data.SQLite;
 using System.Linq;
 using System.Text;
+using System.Data;
 
 namespace SimpleAdoNet
 {
@@ -35,10 +36,7 @@ namespace SimpleAdoNet
             object result = null;
             using (var conn = new SQLiteConnection(connectionString))
             {
-                if (command == null)
-                {
-                    command = new SQLiteCommand(sql);
-                }
+                CheckCommand();
                 command.Connection = conn;
                 try
                 {
@@ -51,6 +49,25 @@ namespace SimpleAdoNet
                 }
             }
             return result;
+        }
+
+        public void Reader(Action<SQLiteDataReader> readerAction, CommandBehavior behavior = CommandBehavior.Default)
+        {
+            using (var conn = new SQLiteConnection(connectionString))
+            {
+                CheckCommand();
+                command.Connection = conn;
+                conn.Open();
+                readerAction(command.ExecuteReader(behavior));
+            }
+        }
+
+        private void CheckCommand()
+        {
+            if (command == null)
+            {
+                command = new SQLiteCommand(sql);
+            }
         }
     }
 }
