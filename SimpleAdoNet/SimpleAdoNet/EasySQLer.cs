@@ -31,9 +31,8 @@ namespace SimpleAdoNet
             return this;
         }
 
-        public object Scalar()
+        public EasySQLer Scalar(out object result)
         {
-            object result = null;
             using (var conn = new SQLiteConnection(connectionString))
             {
                 CheckCommand();
@@ -45,21 +44,29 @@ namespace SimpleAdoNet
                 }
                 catch (Exception e)
                 {
-                    Console.WriteLine(e.Message);
+                    throw e;
                 }
             }
-            return result;
+            return this;
         }
 
-        public void Reader(Action<SQLiteDataReader> readerAction, CommandBehavior behavior = CommandBehavior.Default)
+        public EasySQLer Reader(Action<SQLiteDataReader> readerAction, CommandBehavior behavior = CommandBehavior.Default)
         {
             using (var conn = new SQLiteConnection(connectionString))
             {
                 CheckCommand();
                 command.Connection = conn;
-                conn.Open();
-                readerAction(command.ExecuteReader(behavior));
+                try
+                {
+                    conn.Open();
+                    readerAction(command.ExecuteReader(behavior));
+                }
+                catch (Exception e)
+                {
+                    throw e;
+                }
             }
+            return this;
         }
 
         private void CheckCommand()

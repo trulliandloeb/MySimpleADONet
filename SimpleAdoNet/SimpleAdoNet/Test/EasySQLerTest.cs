@@ -22,13 +22,13 @@ namespace SimpleAdoNet.Test
         [Test]
         public void TestScalar()
         {
-            var totalCount = sqler.Query("select count(*) from USER_ACCOUNT").Scalar();
-            Assert.AreEqual(2, totalCount);
-
-            var otherCount = sqler
+            object totalCount, otherCount;
+            sqler
+                .Query("select count(*) from USER_ACCOUNT").Scalar(out totalCount)
                 .Query("select count(*) from USER_ACCOUNT where username != @username")
-                .FillParameters(parameters => parameters.AddWithValue("@username", "Jdoe"))
-                .Scalar();
+                    .FillParameters(parameters => parameters.AddWithValue("@username", "Jdoe"))
+                    .Scalar(out otherCount);
+            Assert.AreEqual(2, totalCount);
             Assert.AreEqual(1, otherCount);
         }
 
