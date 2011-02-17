@@ -35,8 +35,7 @@ namespace SimpleAdoNet
         {
             using (var conn = new SQLiteConnection(connectionString))
             {
-                CheckCommand();
-                command.Connection = conn;
+                CheckAndSetCommand(conn);
                 try
                 {
                     conn.Open();
@@ -47,6 +46,7 @@ namespace SimpleAdoNet
                     throw e;
                 }
             }
+            Clear();
             return this;
         }
 
@@ -54,8 +54,7 @@ namespace SimpleAdoNet
         {
             using (var conn = new SQLiteConnection(connectionString))
             {
-                CheckCommand();
-                command.Connection = conn;
+                CheckAndSetCommand(conn);
                 try
                 {
                     conn.Open();
@@ -66,15 +65,35 @@ namespace SimpleAdoNet
                     throw e;
                 }
             }
+            Clear();
             return this;
         }
 
-        private void CheckCommand()
+        public EasySQLer Modify(out int number)
+        {
+            using (var conn = new SQLiteConnection(connectionString))
+            {
+                CheckAndSetCommand(conn);
+                conn.Open();
+                number = command.ExecuteNonQuery();
+            }
+            Clear();
+            return this;
+        }
+
+        private void CheckAndSetCommand(SQLiteConnection conn)
         {
             if (command == null)
             {
                 command = new SQLiteCommand(sql);
             }
+            command.Connection = conn;
+        }
+
+        private void Clear()
+        {
+            sql = null;
+            command = null;
         }
     }
 }
