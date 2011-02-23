@@ -41,15 +41,8 @@ namespace SimpleAdoNet
             {
                 conn.ConnectionString = connectionString;
                 CheckAndSetCommand(conn);
-                try
-                {
-                    conn.Open();
-                    result = command.ExecuteScalar();
-                }
-                catch (Exception e)
-                {
-                    throw e;
-                }
+                conn.Open();
+                result = command.ExecuteScalar();
             }
             Clear();
             return this;
@@ -61,15 +54,8 @@ namespace SimpleAdoNet
             {
                 conn.ConnectionString = connectionString;
                 CheckAndSetCommand(conn);
-                try
-                {
-                    conn.Open();
-                    readerAction(command.ExecuteReader(behavior));
-                }
-                catch (Exception e)
-                {
-                    throw e;
-                }
+                conn.Open();
+                readerAction(command.ExecuteReader(behavior));
             }
             Clear();
             return this;
@@ -115,5 +101,4 @@ namespace SimpleAdoNet
             command = null;
         }
     }
-
 }
