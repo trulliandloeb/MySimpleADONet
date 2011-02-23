@@ -75,7 +75,18 @@ namespace SimpleAdoNet
             {
                 CheckAndSetCommand(conn);
                 conn.Open();
-                number = command.ExecuteNonQuery();
+                var transaction = conn.BeginTransaction();
+                command.Transaction = transaction;
+                try
+                {
+                    number = command.ExecuteNonQuery();
+                    transaction.Commit();
+                }
+                catch (Exception e)
+                {
+                    transaction.Rollback();
+                    throw e;
+                }
             }
             Clear();
             return this;
