@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using SimplaAdoNet.Entity;
-using System.Data.SQLite;
 
 namespace SimpleAdoNet.Test
 {
