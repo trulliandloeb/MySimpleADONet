@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using NUnit.Framework;
 using SimplaAdoNet.Entity;
+using System.Data.SQLite;
 
 namespace SimpleAdoNet.Test
 {
@@ -11,12 +12,12 @@ namespace SimpleAdoNet.Test
     public class EasySQLerTest
     {
         private const string CONN_STRING = "data source=\"D:\\Program Files (x86)\\SQLite.NET\\db\\mysqlo\"";
-        private EasySQLer sqler;
+        private EasySQLer<SQLiteConnection, SQLiteCommand> sqler;
 
         [SetUp]
         public void SetUp()
         {
-            sqler = new EasySQLer(CONN_STRING);
+            sqler = new EasySQLer<SQLiteConnection, SQLiteCommand>(CONN_STRING);
         }
 
         [Test]
@@ -26,7 +27,7 @@ namespace SimpleAdoNet.Test
             sqler
                 .Query("select count(*) from USER_ACCOUNT").Scalar(out totalCount)
                 .Query("select count(*) from USER_ACCOUNT where username != @username")
-                    .FillParameters(parameters => parameters.AddWithValue("@username", "Jdoe"))
+                    .FillParameters(parameters => (parameters as SQLiteParameterCollection).AddWithValue("@username", "Jdoe"))
                     .Scalar(out otherCount);
             Assert.AreEqual(2, totalCount);
             Assert.AreEqual(1, otherCount);
@@ -59,10 +60,11 @@ namespace SimpleAdoNet.Test
                 .Query("insert into user_account values(@id, @name, @password, @groupname)")
                     .FillParameters(parameters =>
                     {
-                        parameters.AddWithValue("@id", "DA5816B0-E013-4AC3-918F-4F06C306BA22");
-                        parameters.AddWithValue("@name", "sheldon");
-                        parameters.AddWithValue("@password", "sheldor");
-                        parameters.AddWithValue("@groupname", "doctor");
+                        var p = parameters as SQLiteParameterCollection;
+                        p.AddWithValue("@id", "DA5816B0-E013-4AC3-918F-4F06C306BA22");
+                        p.AddWithValue("@name", "sheldon");
+                        p.AddWithValue("@password", "sheldor");
+                        p.AddWithValue("@groupname", "doctor");
                     })
                     .Modify(out insert)
                 .Query("update user_account set username = 'leonard' where id = 'DA5816B0-E013-4AC3-918F-4F06C306BA22'").Modify(out update)

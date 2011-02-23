@@ -4,37 +4,42 @@ using System.Data.SQLite;
 using System.Linq;
 using System.Text;
 using System.Data;
+using System.Data.Common;
 
 namespace SimpleAdoNet
 {
-    public class EasySQLer
+    public class EasySQLer<TConnection, TCommand>
+        where TConnection : DbConnection, new()
+        where TCommand : DbCommand, new()
     {
         private string connectionString;
         private string sql;
-        private SQLiteCommand command;
+        private TCommand command;
 
         public EasySQLer(string connectionString)
         {
             this.connectionString = connectionString;
         }
 
-        public EasySQLer Query(string sql)
+        public EasySQLer<TConnection, TCommand> Query(string sql)
         {
             this.sql = sql;
             return this;
         }
 
-        public EasySQLer FillParameters(Action<SQLiteParameterCollection> fillAction)
+        public EasySQLer<TConnection, TCommand> FillParameters(Action<DbParameterCollection> fillAction)
         {
-            command = new SQLiteCommand(sql);
+            command = new TCommand();
+            command.CommandText = sql;
             fillAction(command.Parameters);
             return this;
         }
 
-        public EasySQLer Scalar(out object result)
+        public EasySQLer<TConnection, TCommand> Scalar(out object result)
         {
-            using (var conn = new SQLiteConnection(connectionString))
+            using (var conn = new TConnection())
             {
+                conn.ConnectionString = connectionString;
                 CheckAndSetCommand(conn);
                 try
                 {
@@ -50,10 +55,11 @@ namespace SimpleAdoNet
             return this;
         }
 
-        public EasySQLer Reader(Action<SQLiteDataReader> readerAction, CommandBehavior behavior = CommandBehavior.Default)
+        public EasySQLer<TConnection, TCommand> Reader(Action<DbDataReader> readerAction, CommandBehavior behavior = CommandBehavior.Default)
         {
-            using (var conn = new SQLiteConnection(connectionString))
+            using (var conn = new TConnection())
             {
+                conn.ConnectionString = connectionString;
                 CheckAndSetCommand(conn);
                 try
                 {
@@ -69,10 +75,11 @@ namespace SimpleAdoNet
             return this;
         }
 
-        public EasySQLer Modify(out int number)
+        public EasySQLer<TConnection, TCommand> Modify(out int number)
         {
-            using (var conn = new SQLiteConnection(connectionString))
+            using (var conn = new TConnection())
             {
+                conn.ConnectionString = connectionString;
                 CheckAndSetCommand(conn);
                 conn.Open();
                 var transaction = conn.BeginTransaction();
@@ -92,11 +99,12 @@ namespace SimpleAdoNet
             return this;
         }
 
-        private void CheckAndSetCommand(SQLiteConnection conn)
+        private void CheckAndSetCommand(TConnection conn)
         {
             if (command == null)
             {
-                command = new SQLiteCommand(sql);
+                command = new TCommand();
+                command.CommandText = sql;
             }
             command.Connection = conn;
         }
@@ -107,4 +115,5 @@ namespace SimpleAdoNet
             command = null;
         }
     }
+
 }
